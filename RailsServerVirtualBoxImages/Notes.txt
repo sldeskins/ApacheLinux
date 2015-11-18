@@ -1,0 +1,343 @@
+apache server notes
+on windows virtual box host
+cd C:\Program Files\Oracle\VirtualBox
+$ VBoxManage modifyvm "turn-key-linux-rails" --natpf1 "guestssh,tcp,,8000,,80"
+
+---
+https://msdn.microsoft.com/en-us/library/ms751530(v=vs.110).aspx
+To enable a port range in advance
+Click Start, click Run, and type firewall.cpl. This opens the Windows Firewall Control Panel applet.
+On Windows 7 or Windows Server 2008 R2, follow these steps.
+Click Advanced settings in the left column of the Windows Firewall window.
+Click Inbound Rules in the left column.
+Click New Rules in the right column.
+Select Port and click next.
+Select TCP and enter 8000, 8001, 8002, 8003, 9000, 80, 443 in the Specific local ports field.
+Click Next.
+Select Allow the connection, and click Next .
+Select Domain and Private, and click Next.
+Name this rule WCF-WF 4.0 Samples, and click Finish.
+Click Outbound Rules and repeat steps c to h.
+
+---
+virutal box 
+NAT
+networking -> advance	 
+add rules port forwarding
+	port 80 - for http
+	port 22 for ssh
+	port 3000 for rails
+--------------------------------------------------
+linux box - CentOS Virtual Box
+
+PYCURL ERROR 6
+fix
+	#ifdown eth0
+	#ifup eth0
+	#yum update
+	
+
+https://help.ubuntu.com/community/NetworkConfigurationCommandLine/Automatic	
+	Finding your network interface
+When setting up your network you will need to know the network interface cards on your computer. The interface name of cards for different vendors may be different, which is why this step is needed.
+
+ls /sys/class/net
+# or
+ip addr
+	
+	
+	
+	
+	
+	
+	#ping www.google.com
+	
+	// if using bridge
+	#yum install config-network-tui
+====================================
+ubuntu networking using static instead nat dchp
+
+virtual box connection must be set as bridge adapter
+
+ip address information must be set in 
+	/etc/network/interfaces
+
+name server must be set in 
+	/etc/resolv.conf
+	
+----------------------------------------
+//to get the apache	
+--------------------
+//fedora
+#yum install httpd 
+#yum install httpd-maunal
+
+//ubuntu
+apt-get install apache2
+apt-get install apache2-manual
+
+//starting the service - fedora
+#service httpd start
+#service httpd restart
+
+//starting the service - ubuntu
+#service apache2 start
+#service apache2 restart
+
+// to ensure the service will start at boot time
+#chkconfig httpd on
+#chkconfig httpd --list
+
+//to see if the service is running 
+# ps
+#lsof -i | grep httpd
+
+// to see if things have failed check log file
+#cat /var/log/httpd/error_log
+#cat /var/log/apache2/error_log
+
+//to see about security enable - linux
+#sestatus
+// to temp turn of security 
+#setenforce 0 
+
+
+//apache config
+#vi /etc/httpd/conf/httpd.conf
+
+//web site file locations
+ /var/www/ 
+
+//when virutal hosting is turned on
+#vi /etc/hosts
+
+=========================
+
+//fedora
+#yum install lynx
+
+//ubuntu
+apt-get install lynx
+----
+test
+----
+lynx www.google.com
+
+#yum install joe
+
+-----------------------
+http://installion.co.uk/ubuntu/precise/universe/j/joe/install/index.html
+Check that you have the correct repository enabled
+
+First, check that the universe repository is enabled by inspecting '/etc/apt/sources.list' with your favourite editor.
+
+You will need to use sudo to ensure that you have permissions to edit the file.
+
+If universe is not included then modify the file so that it does.
+
+deb http://us.archive.ubuntu.com/ubuntu precise main universe
+After any changes you should run this command to update your system.
+
+sudo apt-get update
+You can now install the package like this.
+
+Install joe
+sudo apt-get install joe
+
+----------------------------------
+
+su - 
+=======================================
+//ssh configuration;
+--------------------- 
+//disable root login and set welcome banner message
+//ubuntu 
+apt-get openssh-client openssh-server
+
+//fedora 
+yum install openssh openssh-server
+
+---
+vi /etc/ssh/sshd_config
+
+changes
+	PremitRootLogin no
+	Banner /etc/welcome.txt
+	
+---
+//create banner message - create file if it does not exists
+vi /etc/welcome.txt
+
+//ubuntu
+vi /etc/issue.net
+---
+//restart service
+//ubuntu 
+service ssh restart 
+
+//fedore
+service sshd restart
+
+---
+test log in as user, e.g.sld
+ssh sld@localhost
+
+---
+===============================
+//setting up the apache server
+
+//fedora
+httpd
+service httpd status
+yum install httpd
+
+//ubuntu
+apache2
+service apache2 status
+apt-get install apache2
+
+
+===============================
+//setting up the very secure ftp server VSFTPD
+//fedora
+yum install vsftpd
+
+//ubuntu
+apt-get install vsftpd
+
+
+//config changes
+vi /etc/vsftpd/vsftpd.conf
+
+
+//changes
+	anonymous_enable=NO	
+	ftpd_banner=sld's vs FTP server
+	write_enable=YES
+	chroot_local_usr=YES
+	allow_writeable_chroot=YES
+
+//restart server after config changes
+service vsftpd restart
+
+
+//set up port forwarding
+vi /etc/vsftpd/vsftpd.conf	
+
+//add new lines to bottom of conf for ports
+	pasv_enable=YES
+	pasv_min_port=65533
+	pasv_max_port=65534
+	pasv_address=127.0.0.1
+	
+=========================================
+//git install
+//ubuntu
+apt-get install git
+
+//fedora
+yum install git	
+
+=====================================
+Database Installs
+=====================================
+SQLite
+======
+
+//ubuntu
+apt-get install sqlite
+apt-get install sqlite3 libsqlite3-dev
+
+//fedora
+yum install sqlite
+yum install sqlite-devel
+
+//test
+sqlite3
+.help
+.quit
+
+======
+MySQL
+======
+//ubuntu
+apt-get install mysql-server
+
+//fedora
+yum install mysql mysql-server
+
+
+http://www.if-not-true-then-false.com/2010/install-mysql-on-fedora-centos-red-hat-rhel/
+https://www.rackspace.com/knowledge_center/article/centosfedorarhel-installing-mysql-database-with-yum
+
+http://www.if-not-true-then-false.com/2012/install-postgresql-on-fedora-centos-red-hat-rhel/
+
+//test
+service mysql status
+ 
+ 
+==========
+PostgreSQL
+==========
+//fedora
+yum install postgres
+
+//on ubuntu
+get-apt install postresql postgresql-contrib
+
+
+http://www.if-not-true-then-false.com/2012/install-postgresql-on-fedora-centos-red-hat-rhel/comment-page-2/
+
+
+============================
+Ruby install
+============================
+//ubuntu
+apt-get install ruby
+
+//fedora
+yum install ruby ruby-devel
+
+---
+yum remove ruby ruby-devel
+
+//rvm
+
+\curl -L https://get.rvm.io | bash -s stable
+
+
+//edit - add user to rvm 
+vi /etc/group
+
+ search for rvm and add users like 'sld' to the group
+ 
+ rvm install 1.9.3
+ rvm install   ## to get the lastest version
+ 
+----------------
+----------------
+rvm use 2.2.1
+
+
+gem install rails
+gem install sqlite3
+
+
+
+
+//ubuntu
+apt-get install nodejs
+
+//fedora
+yum install nodejs
+
+
+--------------
+test
+--------------
+#rails server
+
+windows land open putty ssh localhost port 22
+logon like 'sld'
+
+lynx http://localhost:3000
